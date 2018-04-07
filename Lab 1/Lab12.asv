@@ -1,0 +1,42 @@
+% Frequency stability property
+
+function [maxIndex] = Lab12(M)
+
+[R,~] = size(M);
+
+comb4 = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1;
+         1 1 0 0; 0 1 1 0; 0 0 1 1; 1 0 1 0; 0 1 0 1; 1 0 0 1;
+         0 1 1 1; 1 0 1 1; 1 1 0 1; 1 1 1 0; 
+         0 0 0 0; 1 1 1 1];
+     
+comb3 = [1 0 0; 0 1 0; 0 0 1;
+        0 1 1; 1 0 1; 1 1 0;
+        1 1 1; 0 0 0];
+comb2 = [0 1; 1 0; 1 1; 0 0];
+
+[R4,~] = size(comb4);
+[R3,~] = size(comb3);
+[R2,~] = size(comb2);
+
+occurM4 = zeros(R,R4);
+meanM4 = 0;
+stDevM4 = zeros(R,1);
+
+% Nr = strfind(M(1,:), comb4(1,:));
+% [~,C41] = size(Nr);
+
+for i = 1:R
+    for j = 1:R4
+        temp = strfind(M(i,:), comb4(j,:));
+        [~,tempColsize] = size(temp);    
+        occurM4(i,j) = tempColsize; % saving nu
+    end
+    stDevM4(i,:) = std(occurM4(i,:)); % Calculating standard diviation
+end
+
+[RI, CI] = sort(stDevM4, 'descend');
+maxIndex = CI(1:12);
+maxIndex = sort(maxIndex);
+
+
+end

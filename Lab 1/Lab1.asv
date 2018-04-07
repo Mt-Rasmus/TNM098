@@ -59,7 +59,7 @@ for r = 1:R
 
 end
 
-[~, CI] = size(I);
+[RI, CI] = size(I);
 M2 = zeros(CI,C);
 M2 = M(I,:); % storing all the "failed" sequences
 
