@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NmfDocument xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Culture="en-US" Version="900">
+  <ChildItems />
+  <Presentation>
+    <Basemaps />
+    <Slides />
+  </Presentation>
+  <Map Name="testMap">
+    <Attribution />
+    <Description />
+    <ChildItems>
+      <KmlLayer Id="2b8f9b0f-edc5-4c35-a34e-4baccdbee143" Name="Abila" DrawIndex="0">
+        <PopupSizePosition>
+          <ApplySize>false</ApplySize>
+          <PopupSize>
+            <Width>340</Width>
+            <Height>160</Height>
+          </PopupSize>
+          <PopupPosition>Automatic</PopupPosition>
+        </PopupSizePosition>
+        <Behavior3D>Draped</Behavior3D>
+        <CacheName>KmlLayer_Abila_fdecf4a4-604e-4006-a3c3-dc2fa075c27a</CacheName>
+        <Url>C:\Users\Rasmus\Desktop\MT4\TNM098 (AVDA)\Geospatial\Abila.kml</Url>
+      </KmlLayer>
+      <FeatureLayer Id="83f89757-bc89-4cb4-b59f-f6b103070ef8" Name="Abila" DrawIndex="1">
+        <PopupSizePosition>
+          <ApplySize>false</ApplySize>
+          <PopupSize>
+            <Width>340</Width>
+            <Height>160</Height>
+          </PopupSize>
+          <PopupPosition>Automatic</PopupPosition>
+        </PopupSizePosition>
+        <Behavior3D>Draped</Behavior3D>
+        <CacheName>FeatureLayer_Abila_096577a9-9d7a-438e-aa6e-bfcf10986e7e</CacheName>
+        <DataSourceProperties DataSourceType="File">
+          <DatasetName />
+          <Path>C:\Users\Rasmus\Desktop\MT4\TNM098 (AVDA)\Geospatial\Abila.shp</Path>
+        </DataSourceProperties>
+        <SimpleRenderer>
+          <Symbol BaseSymbolId="YellowSolidLine" SymbolType="Line" />
+        </SimpleRenderer>
+        <PopupProperties>
+          <PopupType>PopupFields</PopupType>
+          <PopupFields>
+            <string>TLID</string>
+            <string>FEDIRP</string>
+            <string>FENAME</string>
+            <string>FETYPE</string>
+            <string>FEDIRS</string>
+            <string>FRADDL</string>
+            <string>TOADDL</string>
+            <string>FRADDR</string>
+            <string>TOADDR</string>
+          </PopupFields>
+          <ShowTips>false</ShowTips>
+          <PrimaryField>FENAME</PrimaryField>
+          <HyperlinkField />
+        </PopupProperties>
+      </FeatureLayer>
+    </ChildItems>
+    <Viewpoint>
+      <Envelope CoordinateSystem="102100" XMin="2751903.94707055" YMin="4297474.96000862" XMax="2797575.45587802" YMax="4317071.71574782" />
+    </Viewpoint>
+    <GeographicTransformations3D />
+    <GeographicTransformations2D />
+    <CoordinateSystem2D ID="102100" />
+  </Map>
+  <Properties DisplayMode="Display2D">
+    <StoreAuthentication>true</StoreAuthentication>
+    <ScreenOverlay />
+  </Properties>
+</NmfDocument>
