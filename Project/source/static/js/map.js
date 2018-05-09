@@ -16,7 +16,16 @@ function map(data, world_map_json){
             width = parentWidth - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
 
-  //TESTKOD BÖRJAR HÄR
+    var zoom = d3.zoom()
+        .scaleExtent([1, 10])
+        .on('zoom', move);
+
+    var tooltip = d3.select(div).append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+    //89.
+
 
         var projection = d3.geoEquirectangular().scale(1).translate([0,0]);
         //.center([60,40])
@@ -32,21 +41,67 @@ projection.scale(s).translate(t);
 
     var svg = d3.select(div).append("svg")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .call(zoom);
+
     var g = svg.append("g");
 
-    svg.append("g")
+    /*svg.append("g")
         .attr("class", "tracts")
         .selectAll("path")
         .data(world_map_json.features)
         .enter().append("path")
         .attr("d", path)
         .attr("fill-opacity", 0.8)
-        .attr("stroke", "#222");
+        .attr("stroke", "#222"); */
 
-    var geoData = {type: "FeatureCollection", features: geoFormat(data)};
 
-    drawPoints();
+    var street = g.selectAll(".street").data(world_map_json.features);
+
+    street.enter().append("path")
+        .attr("class", "street")
+        .attr("d", path)
+        .attr("id", function (d) { return d.TLID;})
+        //.attr("title", function (d) { return d.FENAME + ' ' + d.FETYPE})
+        .attr("stroke", "#222")
+        .style("stroke-width", "2px")
+        .on("mouseover", function (d) {
+
+            d3.select(this).style("fill","blue").attr("stroke", "blue").style("stroke-width", "4px");
+
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
+            tooltip
+                .attr("style", "left:"+(mouse[0]+30)+"px;top:"+(mouse[1]+30)+"px")
+                .html(d.properties.FENAME + ' ' + d.properties.FETYPE);
+
+        }) //d3.select(this).select("path").attr("stroke","blue")});
+        .on("mouseout", function (d) {
+
+            d3.select(this).style("fill","#222").attr("stroke", "#222").style("stroke-width", "2px");
+
+
+        });
+
+
+/*
+    g.append("image")
+        .attr("xlink:href","/static/maps/MC2-tourist.jpg")
+        .attr("width", d3.select("g.tracts").node().getBBox().width + 4)
+        .attr("height", d3.select("g.tracts").node().getBBox().height + 4)
+        .attr("x", d3.select("g.tracts").node().getBBox().x)
+        .attr("y", d3.select("g.tracts").node().getBBox().y)
+        .attr("opacity", 1.0);
+
+    d3.selectAll("image").lower();
+
+*/
+   // var geoData = {type: "FeatureCollection", features: geoFormat(data)};
+
+   // drawPoints();
+
 
 
     //Formats the data in a feature collection
@@ -81,118 +136,27 @@ projection.scale(s).translate(t);
             .attr("class", "point")
             .attr("d", path)
             .attr("d",path.pointRadius(2))
-            .attr("fill","red");
+            .style("opacity",0.5)
+            .attr("fill","red")
+            .on("mouseover", function (d) {
+
+                d3.select(this).lower();
+
+            })
+
+            .on("mouseout", function (d) {
+
+                d3.select(this).raise();
+
+            })
 
     }
 
-    //TESTKOD SLUTAR HÄR
-
-  /*~~ Task 10  initialize color variable ~~*/
-
-/*
-  var color = d3.scaleOrdinal(d3.schemeCategory20);
-
-  //initialize zoom
-  var zoom = d3.zoom()
-    .scaleExtent([1, 10])
-    .on('zoom', move);
-
-  //initialize tooltip
-  var tooltip = d3.select(div).append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
+    function move() {
+        g.style("stroke-width", 1.5 / d3.event.transform.k + "px");
+        g.attr("transform", d3.event.transform);
+    }
 
 
-  /*~~ Task 11  initialize projection and path variable ~~*/
-
-/*
-
-  var projection = d3.geoMercator()
-      .center([60,40])
-      .scale(120);
-
-  var path = d3.geoPath().projection(projection);
-//--------------------------------------------------//
-
-  var svg = d3.select(div).append("svg")
-      .attr("width", width)
-      .attr("height", height)
-      .call(zoom);
-
-  var g = svg.append("g");
-
-
-  var countries = topojson.feature(world_map_json,
-        world_map_json.objects.countries).features;
-
-  var country = g.selectAll(".country").data(countries);
-
-  /*~~ Task 12  initialize color array ~~*/
-
-/*
-  var cc = [];
-
-
-  data.forEach(function (d) {
-      cc[d.Country] = color(d.Country);
-  })
-
-  country.enter().insert("path")
-      .attr("class", "country")
-
-        /*~~ Task 11  add path variable as attr d here. ~~*/
-
-/*
-      .attr("d",path)
-
-      .attr("id", function(d) { return d.id; })
-      .attr("title", function(d) { return d.properties.name; })
-      .style("fill", function(d) { return cc[d.properties.name]; })
-
-      //tooltip
-      .on("mousemove", function(d) {
-        d3.select(this).style('stroke','white');
-
-        tooltip.transition()
-            .duration(200)
-            .style("opacity", .9);
-        var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
-        tooltip
-        .attr("style", "left:"+(mouse[0]+30)+"px;top:"+(mouse[1]+30)+"px")
-        .html(d.properties.name);
-      })
-      .on("mouseout",  function(d) {
-
-          d3.select(this).style('stroke','none');
-          tooltip.transition()
-              .duration(500)
-              .style("opacity", 0);
-      })
-
-      //selection
-      .on("click",  function(d) {
-          /*~~ call the other graphs method for selection here ~~*/
-/*
-          sp.selecDots(d);
-      });
-
-  function move() {
-      g.style("stroke-width", 1.5 / d3.event.transform.k + "px");
-      g.attr("transform", d3.event.transform);
-  }
-
-    /*~~ Highlight countries when filtering in the other graphs~~*/
-/*
-  this.selectCountry = function(value){
-      var c = d3.selectAll(".country");
-        c.style("stroke", function (d) {
-            return value.every(function (p) {
-                return d.properties.name != p.Country ? "red": null;
-            })? null: "red";
-
-        })
-  }
-
-*/
 
 }
