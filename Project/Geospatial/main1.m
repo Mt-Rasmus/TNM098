@@ -5,6 +5,82 @@ M = readtable('gps.csv');
 S = shaperead('Abila.shp');
 [Msort, idx] = sortrows(M,{'id'}); % sorting table by car id
 
+%%
+cc_data = readtable('cc_data.csv');
+
+
+
+employee_data = readtable('car-assignments.csv');
+
+%% Finding the coordinates for the diffeent locations in cc_data
+
+locations = unique(cc_data.location);
+
+l = size(locations);
+
+loc_trans = {};
+
+M.Properties.VariableNames{'id'} = 'CarID';
+M.Properties.VariableNames{'Timestamp'} = 'timestamp';
+
+closest_positions = {};
+
+%%
+
+tic
+
+for i = 10:12
+
+t = ismember(cc_data.location, locations{i});
+loc_trans{i} = cc_data(t,:);
+
+[r,~] = size(loc_trans{i});
+
+
+
+
+for j = 1:r
+    
+
+person_idx = ismember(employee_data(:,1:2), loc_trans{i}(j,4:5));
+car_id = employee_data(person_idx,3);
+
+most_recent_pos = {};
+
+ if ~isnan(car_id.CarID)
+     
+
+
+timeStamp = loc_trans{i}(j,1).timestamp;
+
+
+car_idx = ismember(M(:,2),car_id);
+
+car_pos = M(car_idx,:); 
+
+tupper = timeStamp + minutes(5);
+tlower = timeStamp - minutes(10);
+
+nearest_t = isbetween(car_pos.timestamp, tlower,tupper);
+
+most_recent_pos = car_pos(nearest_t,:);
+
+
+ else
+     most_recent_pos{j} = {};
+     
+
+ end
+
+end
+
+closest_positions{i} = most_recent_pos;
+
+
+end
+
+toc
+
 
 %% Extract samples based on car ID and day.
 
