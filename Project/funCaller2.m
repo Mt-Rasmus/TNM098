@@ -43,13 +43,15 @@ lcNamesAll = strings(54,1);
 % 1. Check if any prices matches in cc match lc buys (for different employees).
 % 2. Check if the dates and places match for these instances.
 % Goal: print which names matched, the time and location.
-% Most interesting index: 18 (15 out of 22 full matches)
+% Most interesting index: 18 (15 out of 22 full matches).
+% 18 is Elsa Orilla, matches 15 times with Kanon Herrero (nr 32)
 % There are a total of 21 matches including all people compares to
 % eachother
 
 Lia = {};
 matchCount = 1:54;
 ind = 18; % choose index to check matches for (1-54)
+disp(lcNamesAll(ind));
 
 for j = 1:54
     
@@ -58,7 +60,7 @@ for j = 1:54
                                                             
 end
 
-matchCount(ind) = 0; % remove match with itself
+%matchCount(ind) = 0; % remove match with itself
 totMatches = sum(matchCount);
 disp(totMatches);
 tm = 0;
@@ -69,7 +71,9 @@ matchesWithPeople = zeros(length(matchIdx), 1);
 compCell = lcPriceAll{ind};
 compDate = lcDateAll{ind};
 compPlace = lcPlaceAll{ind};
-
+commonPlaces = {};
+commonTimes(25) = datetime;
+lengths = 1:length(matchIdx);
 % matchIdx = find(matchCount);
 
 for k = 1:length(matchIdx) % runs as many times as there are matching people
@@ -77,6 +81,8 @@ for k = 1:length(matchIdx) % runs as many times as there are matching people
     currPriceCell = ccPriceAll{matchIdx(k)};
     currDateCell = ccDateAll{matchIdx(k)};
     currPlaceCell = ccPlaceAll{matchIdx(k)};
+    
+    lengths(k) = length(currPriceCell);
     
     priceMatchIdx = find(Lia{matchIdx(k)}); % pick out index/indices of purchases in compCell that matched with curr person.
     
@@ -89,8 +95,13 @@ for k = 1:length(matchIdx) % runs as many times as there are matching people
               if(currPrice == currPriceCell(m) && ...
                      strcmp(compPlace(priceMatchIdx(l)),currPlaceCell(m)) && ...
                      day(compDate(priceMatchIdx(l))) == day(currDateCell(m)))
+                if (k==2) 
                      tm = tm + 1;
-                     matchesWithPeople(k) = matchesWithPeople(k) + 1;         
+                     matchesWithPeople(k) = matchesWithPeople(k) + 1;
+                     commonPlaces(1, l) = currPlaceCell(m);
+                     commonPlaces{2, l} = currDateCell(m);
+                     commonTimes(l) = currDateCell(m);
+                end
               end
         
         end
