@@ -8,10 +8,12 @@ lcd = readtable('loyalty_data.csv');
 
 sumArr = zeros(54,1);
 lengthArr = zeros(54,1);
- for id = 1:54 % looping through all the names
+
+% for id = 1:54 % looping through all the names
     
+    id = 18;
     nameID = id;
-    
+
     [ccDate, ccPlace, ccPrice, ccName] = cc_calc(ccd, nameID);
 
     [lcDate, lcPlace, lcPrice, lcName] = ld_calc(lcd, nameID);
@@ -27,7 +29,8 @@ lengthArr = zeros(54,1);
     res = zeros(length(lcPrice), 1);
     lengthArr(id) = length(lcPrice);
     for i = 1:length(lcPrice)
-        ey = ey + 1;
+        %ey = ey + 1;
+        
         if(ismember(lcPrice(i),ccPrice))
             res(i) = 0;
         else
@@ -37,10 +40,11 @@ lengthArr = zeros(54,1);
     
     sumArr(id) = sum(res);
 
- end
+ % end
 
 cc_plot(ccDate, ccPlace, ccPrice, ccName, uniqueDatesCC, uniquePlacesCC);
-disp(sum(sumArr));
+
+%disp(sum(sumArr));
 
 % 320 instances of loyalty card use without cc use. Might be cash payment.
 % Analysis:

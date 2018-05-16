@@ -1,6 +1,6 @@
 % This program picks filters cc card data by name
 
-function [xDate, xPlace, xPrice, name] = cc_calc(M, nameID);
+function [xDate, xPlace, xPrice, name] = cc_calc(M, nameID)
 
 %% Extract samples based on car ID and day.
 
@@ -25,7 +25,7 @@ uniqueNames = unique(names);
 name = uniqueNames(nameID); % Pick one name (index between 1 and 53)
 % disp(name);
 
-%%
+%
 
 nameIdxArr = find((namesArr==name)); % Saves all indices of certain name
 indices = 1:size(names); 
