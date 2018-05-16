@@ -5,17 +5,27 @@ function [] = cc_plot(xDate, xPlace, xPrice, name, uniqueDates, uniquePlaces)
 % single plot
 
 dateCells = {};
+pInd = {};
+
+% for i = 1:size(uniqueDatesCC)
+%     dateCells{i} = ccDate(day(ccDate)==uniqueDatesCC(i)); % saving all seperate dates in cell arrays
+% end
 
 for i = 1:size(uniqueDates)
+    
     dateCells{i} = xDate(day(xDate)==uniqueDates(i)); % saving all seperate dates in cell arrays
+    
+    pInd{i} = datefind(dateCells{i}, xDate);
+
 end
 
 pntColor = hsv(length(uniqueDates));
 figure(1)
 
-legs = 1:length(dateCells);
-legs = num2str(legs);
-legs = strsplit(legs,' ');
+% legs = 1:length(dateCells);
+% legs = num2str(legs);
+% legs = strsplit(legs,' ');
+
 sc = 1:length(dateCells);
 
 for j = 1:length(dateCells)
@@ -28,21 +38,40 @@ for j = 1:length(dateCells)
     end
 
     x = times;
-    y = 1:length(aDay);            % Create Data
-
+    y = 1:length(aDay); 
+    yString = xPlace(pInd{j}); % now translate the names into numbers using a new function
+ 
+    for d1 = 1:length(yString) 
+        
+        place = yString(d1);  
+        
+        for d2 = 1:length(uniquePlaces)   
+            
+            if(strcmp(place, uniquePlaces(d2)))
+                y(d1) = d2;
+            end
+        end
+    end
+    
     sc(j) =  scatter(x, y, 15, pntColor(j,:),'Marker','o');
     line(x,y, 'Color', pntColor(j,:));
     
     hold on
     
     set(gca, 'XTick', [0:2:24], 'XTickLabel', rem([0:2:24],24));
-    set(gca, 'Ytick',y,'YTickLabel',uniquePlaces);
+    set(gca, 'Ytick', 1:length(uniquePlaces), 'YTickLabel',uniquePlaces);
     
-    axis([1  24    0  6])
+    axis([1  24    0  length(uniqueDates)])
     xlabel('Time (Hr)')
 
 end
 
-legend(sc, legs, 'Location','northwest');
+labs = {};
+
+for c = 1:length(uniqueDates)
+    labs{c} = strcat(num2str(uniqueDates(c)), '/1');
+end
+
+legend(sc, labs, 'Location','northwest');
 
 end
