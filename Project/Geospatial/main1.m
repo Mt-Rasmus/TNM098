@@ -38,6 +38,7 @@ loc_trans{i} = cc_data(t,:);
 
 
 most_recent_pos = {};
+no_id_idx = [];
 
 for j = 1:r
     
@@ -64,27 +65,20 @@ car_pos = M(car_idx,:);
 timediff = abs(car_pos.timestamp - timeStamp);
     
 [nearest, nIDX] = min(timediff);
-    
-most_recent_pos{j} = car_pos(nIDX,:);
-    
-
-
-% tupper = timeStamp + minutes(5);
-% tlower = timeStamp - minutes(10);
-% 
-% nearest_t = isbetween(car_pos.timestamp, tlower,tupper);
-% 
-% 
-
-
+cell = {};
+cell{1} = car_pos(nIDX,:);
+%most_recent_pos{j} = car_pos(nIDX,:);
+ most_recent_pos = [most_recent_pos, cell];
 
  else
-     most_recent_pos{j} = {};
+     no_id_idx = [i,j];
+     %most_recent_pos{j} = {};
      
 
  end
 
 end
+
 
 closest_positions{i} = most_recent_pos;
 
@@ -96,26 +90,30 @@ toc
 %%
 
 [~,c1] = size(closest_positions);
-coord = {};
+location_coord = {};
+
 
 for m = 1:c1
    
     [~,c2] = size(closest_positions{m});
+    coord = [];
     
     
     for n = 1:c2
        
         p = closest_positions{m}(:,n);
         
-        
-        if ~isempty(p{1})
-            
-            coord = [coord,p];
- 
-        end
-            
-        
+        coord(n,:) = table2array(p{1}(:,2:4));
+%         if ~isempty(p{1})
+%             
+%             coord = [coord,p];
+%  
+%         end
+%             
+
     end
+    
+    location_coord{m} = coord;
     
     
     
@@ -123,15 +121,114 @@ end
 
 %%
 
-[~,col] = size(coord);
+% [~,col] = size(coord);
+% 
+% longitude = [];
+% latitude = [];
+% 
+% for s = 1:col
+%     
+%     longitude(s,:) = coord{s}.long;
+%     latitude(s,:) = coord{s}.lat;
+%     
+% end
 
-longitude = [];
-latitude = [];
+%%
+% [~,c1] = size(closest_positions);
+% 
+% 
+% for m = 1:c1
+%    
+%     [~,c2] = size(closest_positions{m});
+%     latsum = 0;
+%     longsum = 0;
+%     
+%     for n = 1:c2
+%        
+%         latsum = latsum + closest_positions{m}{n}(:,3);
+%         longsum = longsum + closest_positions{m}{n}(:,4);
+%             
+%         
+%     end
+%     
+%     latmean = latsum/c2;
+%     longmean = longsum/c2;
+%     
+%     
+% end
 
-for s = 1:col
+positions = {};
+%%Find the optimal eps for DBSCAN
+%http://iopscience.iop.org/article/10.1088/1755-1315/31/1/012012/pdf
+for v = 1:c1
     
-    longitude(s,:) = coord{s}.long;
-    latitude(s,:) = coord{s}.lat;
+    [length, ~] = size(location_coord{v});
+    if ~isempty(location_coord{v})
+    
+    for o = 1:length
+        
+        positions = [positions,location_coord{v}(o,2:3)];
+        
+        
+    end
+    
+    end
+end
+
+positions = cat(1,positions{:});
+
+[IDX,D] = knnsearch(positions,positions, 'K',5);
+
+%%
+
+sorted = sort(D,2);
+
+nearestNeighborDist = sort(sorted(:,5));
+
+[nr_points,~] = size(nearestNeighborDist);
+
+x = 1:nr_points;
+
+figure
+
+scatter(x,nearestNeighborDist);
+%[X,Y] = getpts; %To zoom: comment this line and run it in command window after zooming 
+
+
+
+%%
+
+clusters = {};
+noClustersIdx = [];
+foundLocations = [];
+locationIDX = 1;
+
+for v = 1:c1
+    
+   if ~isempty(location_coord{v})
+       
+       pos = location_coord{v}(:,2:3);
+        
+        [clusterIDX, isnoise] = DBSCAN(pos, 0.00015, 3);
+        
+        clusterIDX = logical(clusterIDX);
+        
+        pos = pos(clusterIDX,:);
+        
+        if ~isempty(pos)
+        
+        %clusters = [clusters,pos];
+        clusters{locationIDX} = pos;
+        foundLocations{locationIDX} = locations{v};
+        locationIDX = locationIDX + 1;
+        
+        else
+            noClustersIdx = [noClustersIdx, v];
+        
+        end
+        
+    end
+    
     
 end
 
@@ -161,14 +258,28 @@ figure
 
 mapshow(S);
 
-lon=[samples(:,2)]; % X=long 
-lat=[samples(:,3)]; % Y=lat
+%lon=[samples(:,2)]; % X=long 
+%lat=[samples(:,3)]; % Y=lat
 
-col = lon;
+%col = lon;
 
 hold on
 
 
 % plot(lat,lon, 'r.-', 'LineWidth', 1, 'MarkerSize', 1);
 %surface([lat';lat'],[lon';lon'],[col';col'], 'LineWidth', 5, 'MarkerSize', 1, 'facecol', 'no', 'edgecol', 'interp', 'linew', 2);
-scatter(latitude,longitude);
+
+[~,nrClusters] = size(clusters);
+pntColor = distinguishable_colors(nrClusters);
+hold on
+for C = 1:nrClusters
+    
+    scatter(clusters{C}(:,2),clusters{C}(:,1), 10, pntColor(C,:),'filled', 'Marker','o');
+    
+end
+
+legend(foundLocations, 'FontSize', 5, 'Location', 'northeast');
+
+
+
+
