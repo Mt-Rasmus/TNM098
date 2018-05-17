@@ -9,6 +9,14 @@ S = shaperead('Abila.shp');
 cc_data = readtable('cc_data.csv');
 employee_data = readtable('car-assignments.csv');
 
+%%
+
+uniqueCCnames = unique(cc_data(:,4:5));
+
+specials = ismember(uniqueCCnames, employee_data(:,1:2));
+specIdx = find(specials ~= 1);
+uniqueCCnames = uniqueCCnames(specIdx,1:2);
+
 %% Finding the coordinates for the diffeent locations in cc_data
 
 locations = unique(cc_data.location);
@@ -52,11 +60,22 @@ end
 % 4, 12
 % truck_drivers contains all truck driver names
 
+clc
+
 truck_drivers = employee_data(36:44, 1:2);
 placeList = table2array(cc_data(:,2));
 placeList = unique(placeList);
 tr_idx = [1, 2, 9, 12, 26, 27, 28, 33];
 trucker_places = placeList(tr_idx);
+
+
+% Results:
+% Trucker identities:
+% 101 - Albina (ID 5 and 6)
+% 104 - Henk (ID 1)
+% 105 - Valeria (placeIND 3 (Carlyle Chemical Inc.) (Valeria/Cecilia placeIND 8 (Nationwide Refinery))
+% 106 - Dylan (ID 1 and 2 and 7)
+% 107 - Irene (ID 5 and 6)
 
 currID = 104;
 carNR = array2table(currID);
@@ -66,16 +85,22 @@ car_idx_nans = ismember(M(:,2),carNR);
 car_pos_nans = M(car_idx_nans,:); % pick out all GPS samples for current carID
 
 % ver 2
+
+    % Missing locations: 5 (Kronos Pipe and Irrigation) (look car ID 107 (Irene) and Albina ID 5)                  
+    %                    8 (Stewart and Sons Fabrication) (look  car 106 (Dylan))
     
     tr_idx_idx = 1; % 1-8 Change this to pick new location!
     locIdx = tr_idx(tr_idx_idx); % Pick one place index
     currCellLoc = loc_trans{locIdx}; % Pick one place cell in loc_trans
+    disp(currCellLoc(1,:).location);
     uniqueNames = unique(currCellLoc.FirstName);
 
-%% 
+% 
 
 % The plot answers:
 % where was carID nr X at the time of these peoples transactions
+% Notes: there are 9 truck drivers, but only 6 trucker IDs.
+% Identify these truck drivers, and look at the behaiviour of the remaining 3.
 
 pINDS = {};
 clusters = {};
@@ -102,7 +127,6 @@ for p = 1:size(uniqueNames) % loop as many times as there are unique names in lo
 
     % Find all och the closest times in cc_data to currNameSamples
     sizeCurrNameSamples = size(currNameSamples);
-    disp(sizeCurrNameSamples);
     nrIDX = zeros(sizeCurrNameSamples(:,1), 1);
     
     for s = 1:size(currNameSamples)
@@ -121,3 +145,18 @@ end
 
 cluster_plot(clusters, uniqueNames);
 
+% Results:
+% Trucker identities:
+% 101 - Albina (ID 5 and 6)
+% 104 - Henk
+% 105 - Valeria (placeIND 3 (Carlyle Chemical Inc.) (Valeria/Cecilia placeIND 8 (Nationwide Refinery))
+% 106 - Dylan (ID 1 and 2 and 7)
+% 107 - Irene (ID 5 and 6)
+
+% UKNOWNS:
+% Albina Hafon
+% Benito Hawelon
+% Claudio
+% Adan Morlun
+% Cecilia
+% Varro Awelon - NOT TRUCK DRIVER. not in car assignments / GPSdata

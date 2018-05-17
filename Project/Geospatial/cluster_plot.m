@@ -22,6 +22,7 @@ hold on
 [~,nrClusters] = size(clusters);
 
 pntColor = distinguishable_colors(nrClusters);
+totNrSamps = 0;
 
 hold on
 
@@ -35,6 +36,7 @@ for C = 1:nrClusters
         xSamp = clusters{C}(C2,4);
         xSamp = xSamp.long;
         x(C2) = xSamp;
+        totNrSamps = totNrSamps + 1;
         
         ySamp = clusters{C}(C2,3);
         ySamp = ySamp.lat;
@@ -48,6 +50,8 @@ for C = 1:nrClusters
     y = [];
     
 end
+
+disp(totNrSamps);
 
 legend(uniqueNames, 'FontSize', 10, 'Location', 'northeast');
 
