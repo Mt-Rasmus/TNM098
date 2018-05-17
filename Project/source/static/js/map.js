@@ -98,9 +98,11 @@ projection.scale(s).translate(t);
     d3.selectAll("image").lower();
 
 */
-   // var geoData = {type: "FeatureCollection", features: geoFormat(data)};
+  //  var geoData = {type: "FeatureCollection", features: geoFormat(data)};
 
-   // drawPoints();
+    var geoData = {type: "FeatureCollection", features: locationFormat(data)};
+
+    drawPoints();
 
 
 
@@ -129,24 +131,60 @@ projection.scale(s).translate(t);
     }
 
 
+    function locationFormat(array)
+    {
+        var data = [];
+
+        array.map(function (d, i) {
+            data.push({
+                //Create five variables called :
+                //id,type,geometry,mag and place and assign the corresponding value to is
+                //geometry is an object and has two other attributes called coordinates and type.
+
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates":[d.long, d.lat]
+                },
+
+                "name": d.location
+
+            });
+        });
+        return data;
+    }
+
+
     function drawPoints(){
         //draw point
         var point = g.selectAll(".point").data(geoData.features);
         point.enter().append("path")
             .attr("class", "point")
             .attr("d", path)
-            .attr("d",path.pointRadius(2))
-            .style("opacity",0.5)
+            .attr("d",path.pointRadius(4))
+            .style("opacity",0.8)
             .attr("fill","red")
             .on("mouseover", function (d) {
 
-                d3.select(this).lower();
+                //d3.select(this).lower();
+                d3.select(this).attr("d", path.pointRadius(7));
+
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
+                tooltip
+                    .attr("style", "left:"+(mouse[0]+30)+"px;top:"+(mouse[1]+30)+"px")
+                    .html(d.name);
+
 
             })
 
             .on("mouseout", function (d) {
 
-                d3.select(this).raise();
+                //d3.select(this).raise();
+                d3.select(this).attr("d", path.pointRadius(4));
+
 
             })
 

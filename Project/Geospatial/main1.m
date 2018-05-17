@@ -196,7 +196,7 @@ scatter(x,nearestNeighborDist);
 
 
 
-%%
+%%Create clusters for each location
 
 clusters = {};
 noClustersIdx = [];
@@ -232,6 +232,26 @@ for v = 1:c1
     
 end
 
+%% Determine coordinates for each location 
+%  by calculaing the centriod for each cluster
+
+[~,clustersize] = size(clusters);
+centroids = [clustersize,2];
+
+for c = 1:clustersize
+    
+    [nrClusterPoints, ~] = size(clusters{c});
+    cent = sum(clusters{c})/nrClusterPoints;
+    centroids(c,:) = cent;
+
+end
+
+%%
+foundLocations = reshape(foundLocations, [22,1]);
+
+centroidTable = table(foundLocations, centroids(:,1), centroids(:,2),'VariableNames', {'location','lat','long'});
+
+writetable(centroidTable,'locations.csv');
 
 %% Extract samples based on car ID and day.
 
