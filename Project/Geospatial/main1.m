@@ -10,7 +10,7 @@ cc_data = readtable('cc_data.csv');
 
 
 
-employee_data = readtable('car-assignments.csv');
+employee_data = readtable('car-assignments-v2.csv');
 
 %% Finding the coordinates for the diffeent locations in cc_data
 
@@ -134,28 +134,6 @@ end
 % end
 
 %%
-% [~,c1] = size(closest_positions);
-% 
-% 
-% for m = 1:c1
-%    
-%     [~,c2] = size(closest_positions{m});
-%     latsum = 0;
-%     longsum = 0;
-%     
-%     for n = 1:c2
-%        
-%         latsum = latsum + closest_positions{m}{n}(:,3);
-%         longsum = longsum + closest_positions{m}{n}(:,4);
-%             
-%         
-%     end
-%     
-%     latmean = latsum/c2;
-%     longmean = longsum/c2;
-%     
-%     
-% end
 
 positions = {};
 %%Find the optimal eps for DBSCAN
@@ -196,7 +174,7 @@ scatter(x,nearestNeighborDist);
 
 
 
-%%Create clusters for each location
+%% Create clusters for each location
 
 clusters = {};
 noClustersIdx = [];
@@ -247,11 +225,11 @@ for c = 1:clustersize
 end
 
 %%
-foundLocations = reshape(foundLocations, [22,1]);
+foundLocations = reshape(foundLocations, [28,1]);
 
 centroidTable = table(foundLocations, centroids(:,1), centroids(:,2),'VariableNames', {'location','lat','long'});
 
-writetable(centroidTable,'locations.csv');
+writetable(centroidTable,'locations-v2.csv');
 
 %% Extract samples based on car ID and day.
 
@@ -289,17 +267,18 @@ hold on
 % plot(lat,lon, 'r.-', 'LineWidth', 1, 'MarkerSize', 1);
 %surface([lat';lat'],[lon';lon'],[col';col'], 'LineWidth', 5, 'MarkerSize', 1, 'facecol', 'no', 'edgecol', 'interp', 'linew', 2);
 
-[~,nrClusters] = size(clusters);
-pntColor = distinguishable_colors(nrClusters);
-hold on
-for C = 1:nrClusters
-    
-    scatter(clusters{C}(:,2),clusters{C}(:,1), 10, pntColor(C,:),'filled', 'Marker','o');
-    
+% [~,nrClusters] = size(clusters);
+% pntColor = distinguishable_colors(nrClusters);
+% hold on
+% for C = 1:nrClusters
+%     
+%     scatter(clusters{C}(:,2),clusters{C}(:,1), 10, pntColor(C,:),'filled', 'Marker','o');
+%     
+% end
+% 
+% legend(foundLocations, 'FontSize', 5, 'Location', 'northeast');
+
+for k = 1:30
+scatter(closest_positions{8}{k}.long,closest_positions{8}{k}.lat, 30, 'Marker','o');
 end
-
-legend(foundLocations, 'FontSize', 5, 'Location', 'northeast');
-
-
-
 
