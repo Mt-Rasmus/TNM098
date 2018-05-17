@@ -68,7 +68,6 @@ placeList = unique(placeList);
 tr_idx = [1, 2, 9, 12, 26, 27, 28, 33];
 trucker_places = placeList(tr_idx);
 
-
 % Results:
 % Trucker identities:
 % 101 - Albina (ID 5 and 6)
@@ -77,7 +76,7 @@ trucker_places = placeList(tr_idx);
 % 106 - Dylan (ID 1 and 2 and 7)
 % 107 - Irene (ID 5 and 6)
 
-currID = 104;
+currID = 106;
 carNR = array2table(currID);
 carNR.Properties.VariableNames{'currID'} = 'CarID';
 
@@ -89,7 +88,7 @@ car_pos_nans = M(car_idx_nans,:); % pick out all GPS samples for current carID
     % Missing locations: 5 (Kronos Pipe and Irrigation) (look car ID 107 (Irene) and Albina ID 5)                  
     %                    8 (Stewart and Sons Fabrication) (look  car 106 (Dylan))
     
-    tr_idx_idx = 1; % 1-8 Change this to pick new location!
+    tr_idx_idx = 7; % 1-8 Change this to pick new location!
     locIdx = tr_idx(tr_idx_idx); % Pick one place index
     currCellLoc = loc_trans{locIdx}; % Pick one place cell in loc_trans
     disp(currCellLoc(1,:).location);
@@ -154,7 +153,6 @@ cluster_plot(clusters, uniqueNames);
 % 107 - Irene (ID 5 and 6)
 
 % UKNOWNS:
-% Albina Hafon
 % Benito Hawelon
 % Claudio
 % Adan Morlun
