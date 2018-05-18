@@ -158,3 +158,21 @@ cluster_plot(clusters, uniqueNames);
 % Adan Morlun
 % Cecilia
 % Varro Awelon - NOT TRUCK DRIVER. not in car assignments / GPSdata
+
+
+%% Write a new csv file with new CarIDs
+
+employee_data_v2 = employee_data;
+employee_data_v2(36,:).CarID = 101; %Albina
+employee_data_v2(39,:).CarID = 104; %Henk
+employee_data_v2(40,:).CarID = 105; %Valeria
+employee_data_v2(44,:).CarID = 106; %Dylan
+employee_data_v2(43,:).CarID = 107; %Irene
+
+writetable(employee_data_v2, 'car-assignments-v2.csv');
+
+
+
+
+
+

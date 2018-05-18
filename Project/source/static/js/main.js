@@ -1,5 +1,5 @@
 queue()
-  .defer(d3.csv,'static/data/locations.csv')
+  .defer(d3.csv,'static/data/locations-v2.csv')
   .defer(d3.json,'static/maps/Abila.json')
   .await(draw);
 
