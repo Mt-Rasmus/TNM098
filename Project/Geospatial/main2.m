@@ -98,8 +98,8 @@ car_pos_nans = M(car_idx_nans,:); % pick out all GPS samples for current carID
 
 % The plot answers:
 % where was carID nr X at the time of these peoples transactions
-% Notes: there are 9 truck drivers, but only 6 trucker IDs.
-% Identify these truck drivers, and look at the behaiviour of the remaining 3.
+% Notes: there are 9 truck drivers, but only 5 trucker IDs.
+% Identify these truck drivers, and look at the behaiviour of the remaining 4.
 
 pINDS = {};
 clusters = {};
