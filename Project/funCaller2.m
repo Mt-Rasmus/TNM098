@@ -60,11 +60,10 @@ for j = 1:54
                                                             
 end
 
-%matchCount(ind) = 0; % remove match with itself
+matchCount(ind) = 0; % remove match with itself
 totMatches = sum(matchCount);
 disp(totMatches);
 tm = 0;
-
 
 matchIdx = find(matchCount); % Saving all indices of people ind matched with
 matchesWithPeople = zeros(length(matchIdx), 1);

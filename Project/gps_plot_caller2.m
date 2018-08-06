@@ -19,7 +19,7 @@ CC = readtable('cc_data.csv');
 
 %%
 
-ID = 16; % Picking out a car ID.
+ID = 22; % Picking out a car ID.
 
 name = CA(ID,:);
 
@@ -48,7 +48,7 @@ GPS_p = ismember(GPS.id, ID);
 GPS_p = GPS(GPS_p,:);
 
 AllDates = unique(day(GPS_p.Timestamp));
-minRadius = 0.001;
+minRadius = 0.0005;
 
 GGvalue = 0;
 GGvalue2 = 0;
@@ -61,7 +61,6 @@ rn = 0;
 tester = {};
 dateInds = {};
 presentDates = [];
-
 tic
 
 thePlace = {};
@@ -88,6 +87,7 @@ thePlace = {};
        end
        
             N_runs = nnz(diff(distArray))+1; % count the number of times vehicle has entered vicinity of location  
+        %    runarr = [ runarr, N_runs];
             numRunVals = diff(find([1,diff(distArray'),1])); % saves nr of values in each run.
             
             all = 0;
@@ -97,7 +97,7 @@ thePlace = {};
             end
             
             if(N_runs > 2)
-                
+
                 if(mod(N_runs,2))               
                     oneRuns = ceil(N_runs - N_runs/2 - 1); % Odd nr of runs                
                 else
@@ -124,7 +124,9 @@ thePlace = {};
                         all = enInd;
 
                         rn = r;
-
+                        
+                        disp(endTime.Timestamp.Minute - startTime.Timestamp.Minute);
+                        
                         if(startTime.Timestamp.Hour < endTime.Timestamp.Hour) % Check if employee was there for a certain amout of time
                            % times{1} = startTime;
                            % times{2} = endTime;
@@ -135,7 +137,7 @@ thePlace = {};
                         end
 
                         if(startTime.Timestamp.Hour == endTime.Timestamp.Hour && ...
-                                abs(endTime.Timestamp.Minute - startTime.Timestamp.Minute) > 15) % Check if employee was there for a certain amout of time
+                                abs(endTime.Timestamp.Minute - startTime.Timestamp.Minute) > 6) % Check if employee was there for a certain amout of time
 
                            % times{1} = startTime;
                            % times{2} = endTime;
@@ -220,6 +222,7 @@ figure(1)
 
 sc = zeros(1,length(uniqueDs));
 
+
 for d = 1:length(uniqueDs) % as many times as visitation dates (at most 6/1 - 19/1)
     
     currDate = uniqueDs(d);
@@ -246,12 +249,12 @@ for d = 1:length(uniqueDs) % as many times as visitation dates (at most 6/1 - 19
 
                                     endTime = thePlace{1,p}{1,Lia(d2)}{1,o}{1,2}.Timestamp;
                                     endTime = hour(endTime) + minute(endTime)/60;
-                                    
-                                    x = [x, beginTime];
-                                    x = [x, endTime];
-                                    
-                                    y = [y, cell2mat(thePlace(2,p))];
-                                    y = [y, cell2mat(thePlace(2,p))]; 
+                                          
+                                            x = [x, beginTime];
+                                            x = [x, endTime];
+
+                                            y = [y, cell2mat(thePlace(2,p))];
+                                            y = [y, cell2mat(thePlace(2,p))]; 
 
                         end
                         
@@ -261,9 +264,30 @@ for d = 1:length(uniqueDs) % as many times as visitation dates (at most 6/1 - 19
             
     end
     
-    sc(d) =  scatter(x, y, 250, pntColor(d,:), 'Marker','o');
-    line(x,y, 'Color', pntColor(d,:));
+    % sort x:
+    [xs, xsInd] = sort(x(1:2:end));  
+    [xe, xeInd] = sort(x(2:2:end)); 
+    [ys, ysInd] = sort(y(1:2:end));  
+    [ye, yeInd] = sort(y(2:2:end)); 
+    
+    x2 = [];
+    y2 = [];
+    
+    for u = 1:length(xs)
 
+        x2 =  [x2, xs( u )];
+        x2  = [x2, xe( u )];
+        y2 = [y2, ys( xsInd( u ))];
+        y2 = [y2, ys( xsInd( u ) )];
+        
+    end
+    
+    sc(d) =  scatter(x2, y2, 250, pntColor(d,:), 'Marker','o');
+    line(x2,y2, 'Color', pntColor(d,:));
+    
+    %     x2 = [];
+    %     y2 = [];
+    
     hold on
 
     set(gca, 'XTick', [0:2:24], 'XTickLabel', rem([0:2:24],24));

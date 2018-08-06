@@ -1,5 +1,6 @@
 
 % Read data
+% Function to plot cc data and loyalty data of one person at a time (calls cc_plot2 which handles both)
 
 ccd = readtable('cc_data.csv');
 lcd = readtable('loyalty_data.csv');
@@ -12,6 +13,23 @@ AllPlacesLC = unique(lcd.location);
 AllDatesLC = unique(day(lcd.timestamp));
 AllNamesLC = unique(lcd(:,4:5));
 
+Allplocs = readtable('locations-v2.csv');
+
+
+% Check which CC places that have not yet been located:
+
+unknownPlaces = {};
+
+for o = 1:length(AllPlacesCC)
+    
+    if(~ismember(AllPlacesCC(o), Allplocs.location))
+       unknownPlaces{1,end+1} = AllPlacesCC(o);
+
+        unknownPlaces{2,end} = o;
+    end
+    
+end
+
 %%
 
 sumArr = zeros(54,1);
@@ -23,7 +41,10 @@ lengthArr = zeros(54,1);
     nameID = id;
 
     [ccDate, ccPlace, ccPrice, ccName] = cc_calc(ccd, nameID);
-
+    
+    ccName = strsplit(ccName{1}, ' ');
+    ccName = strcat(ccName{1}, {' '}, ccName{2});
+    
     [lcDate, lcPlace, lcPrice, lcName] = ld_calc(lcd, nameID);
 
     uniquePlacesCC = unique(ccPlace);
@@ -58,7 +79,7 @@ ccbool = true;
 cc_plot2(ccDate, ccPlace, ccPrice, ccName, uniqueDatesCC, uniquePlacesCC, AllPlacesCC, AllDatesCC, maxPriceCC, ccbool);
 figure(2)
 ccbool = false;
-cc_plot2(lcDate, lcPlace, lcPrice, lcName, uniqueDatesLC, uniquePlacesLC, AllPlacesLC, AllDatesLC, maxPriceLC, ccbool);
+cc_plot2(lcDate, lcPlace, lcPrice, ccName, uniqueDatesLC, uniquePlacesLC, AllPlacesLC, AllDatesLC, maxPriceLC, ccbool);
 
 %disp(sum(sumArr));
 
