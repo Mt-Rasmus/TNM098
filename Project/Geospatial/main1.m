@@ -133,11 +133,11 @@ end
 %     
 % end
 
-%%
+%% Find the optimal eps for DBSCAN
+
 
 positions = {};
-%%Find the optimal eps for DBSCAN
-%http://iopscience.iop.org/article/10.1088/1755-1315/31/1/012012/pdf
+%%http://iopscience.iop.org/article/10.1088/1755-1315/31/1/012012/pdf
 for v = 1:c1
     
     [length, ~] = size(location_coord{v});
@@ -218,18 +218,17 @@ centroids = [clustersize,2];
 
 for c = 1:clustersize
     
-    [nrClusterPoints, ~] = size(clusters{c});
-    cent = sum(clusters{c})/nrClusterPoints;
-    centroids(c,:) = cent;
+
+    centroids(c,:) = calcCentroid(clusters{c});
 
 end
 
-%%
+%% Create CSV file with location coords
 foundLocations = reshape(foundLocations, [28,1]);
 
 centroidTable = table(foundLocations, centroids(:,1), centroids(:,2),'VariableNames', {'location','lat','long'});
 
-writetable(centroidTable,'locations-v2.csv');
+%writetable(centroidTable,'locations-v2.csv');
 
 %% Extract samples based on car ID and day.
 
@@ -260,6 +259,9 @@ mapshow(S);
 %lat=[samples(:,3)]; % Y=lat
 
 %col = lon;
+Color = distinguishable_colors(35);
+pntColor = distinguishable_colors(height(locationsV3));
+
 
 hold on
 
@@ -267,18 +269,239 @@ hold on
 % plot(lat,lon, 'r.-', 'LineWidth', 1, 'MarkerSize', 1);
 %surface([lat';lat'],[lon';lon'],[col';col'], 'LineWidth', 5, 'MarkerSize', 1, 'facecol', 'no', 'edgecol', 'interp', 'linew', 2);
 
-% [~,nrClusters] = size(clusters);
-% pntColor = distinguishable_colors(nrClusters);
+% [nrCentroids,~] = size(centroids);
+% pntColor = distinguishable_colors(nrCentroids);
 % hold on
-% for C = 1:nrClusters
+% for C = 1:nrCentroids
 %     
-%     scatter(clusters{C}(:,2),clusters{C}(:,1), 10, pntColor(C,:),'filled', 'Marker','o');
+%     scatter(centroids(C,2),centroids(C,1), 500, pntColor(C,:),'filled', 'Marker','o');
 %     
 % end
 % 
-% legend(foundLocations, 'FontSize', 5, 'Location', 'northeast');
-
-for k = 1:30
-scatter(closest_positions{8}{k}.long,closest_positions{8}{k}.lat, 30, 'Marker','o');
+% foundLocations = reshape(foundLocations, [28,1]);
+% 
+% legend(foundLocations, 'FontSize', 20, 'Location', 'northeast');
+hold on
+for k = 1:height(locationsV3)
+scatter(locationsV3(k,:).long, locationsV3(k,:).lat, 500, pntColor(k,:), 'filled', 'Marker','o');
 end
+
+
+legend(locationsV3(:,:).location, 'FontSize', 20, 'Location', 'northeast');
+
+% Plot locaions for each employee at the end of the day
+
+
+% for k = 1:length(employeeHome)
+%    
+%     scatter(homecentroids(k,2), homecentroids(k,1), 2000, Color(k,:));
+%     
+% end
+ 
+  %  scatter(GASCentroid(2), GASCentroid(1), 500,'filled','Marker','o');
+   
+
+%% Finding coordinates for each employees home
+
+[nrEmployees,~] = size(employee_data);
+
+% nighthours = hours(1:5);
+% 
+% night = M(:,:).timestamp.Hour >= 1 & M(:,:).timestamp.Hour <= 5;
+% 
+% nightpos = M(night,:);
+employeeHome = {nrEmployees};
+empIDs = zeros(nrEmployees-9,1);
+noonPositions = {35};
+
+for q = 1:nrEmployees - 9
+    
+    % Start and end time
+    h1 = 7;
+    h2 = 12;
+    
+    
+    empID = employee_data(q,:).CarID;
+    empIDs(q) = empID;
+    
+    cIDX = M(:,:).CarID == empID;
+    carPos = M(cIDX, :);
+    
+    %Pick out the positions for the employee ------->
+    indices = carPos.timestamp.Hour >= h1 & carPos.timestamp.Hour <= h2;
+    POS = carPos(indices,:);
+    [x, ~] = size(POS);
+    noonPos = zeros(x,2);
+    noonPos(:,1) = POS.lat;
+    noonPos(:,2) = POS.long;
+    noonPositions{q} = POS; % <---------
+    
+    days = unique(carPos(:,:).timestamp.Day);
+    [nrdays, ~] = size(days);
+    endOfDayPos = zeros(nrdays,2);
+     
+    
+    for d = 1:nrdays
+        
+        
+        carPosIDX = carPos(:,:).timestamp.Day == days(d,:);
+        CP = carPos(carPosIDX,:);
+        [n,~] = size(CP);
+        carPosDate = zeros(n,2);
+        
+        carPosDate(:,1) = CP.lat; 
+        carPosDate(:,2) = CP.long;
+        endOfDayPos(d,:) = carPosDate(end,:);
+        
+    
+    end
+    
+    employeeHome{q} = endOfDayPos;
+    
+end
+
+%% Use DBSCAN in order to find centroids
+
+clusterPoints = {};
+
+for c = 1:length(employeeHome)
+
+[clusterIndex, isNoise] = DBSCAN(employeeHome{c},0.00015, 3);
+
+clusterIndex = logical(clusterIndex);
+
+clusterPoints{c} = employeeHome{c}(clusterIndex,:);
+
+
+end
+
+%%
+[~,NrClusters] = size(clusterPoints);
+homecentroids = [NrClusters,2];
+
+for p = 1:NrClusters
+    
+    homecentroids(p,:) = calcCentroid(clusterPoints{p});
+
+end
+
+%%
+
+homeTable = table(empIDs, homecentroids(:,1), homecentroids(:,2),'VariableNames', {'location','lat','long'});
+
+%% Find GasTech coord
+
+[~,L] = size(noonPositions);
+
+lastPosB4Work = {L};
+
+tic
+
+for j = 1:L
+    
+    
+    uDays = unique(noonPositions{j}(:,:).timestamp.Day);
+    [nrDays, ~] = size(uDays);
+    endOfDayPos = zeros(nrDays,2);
+    
+    %for z = 1:zSize-1
+    
+    for z = 1:nrDays
+        
+    carIDX = noonPositions{j}(:,:).timestamp.Day == uDays(z,:);
+    datePos = noonPositions{j}(carIDX,:);
+    
+    [Size,~] = size(datePos);
+    
+    max = duration(0,0,0);
+    
+    if Size > 1
+    
+    for y = 1:Size-1
+    
+    diff = abs(datePos(y,:).timestamp - datePos(y+1,:).timestamp);
+    
+    
+    if diff > max
+        max = diff;
+        index = y;
+    end
+   
+    end
+       
+    endOfDayPos(z,1) = datePos(index,:).lat;
+    endOfDayPos(z,2) = datePos(index,:).long;
+
+    else
+        endOfDayPos(z,1) = datePos(:,:).lat;
+        endOfDayPos(z,2) = datePos(:,:).long;
+    end
+    
+    end
+    
+   lastPosB4Work{j} = endOfDayPos;
+       
+    
+end
+
+toc
+
+
+%% 
+GASPos = [];
+
+ for p = 1:length(lastPosB4Work)
+     
+    [S, ~] = size(lastPosB4Work{p});
+    
+    for v = 1:S
+       
+        GASPos = [GASPos, lastPosB4Work{p}(v,:)];
+        
+    end
+     
+ end
+
+%%
+
+GASPos = [];
+
+ for p = 1:length(lastPosB4Work)
+     
+    [S, ~] = size(lastPosB4Work{p});
+    
+    for v = 1:S
+       
+        ey = lastPosB4Work{p}(v,:);
+     %   GASPos = [GASPos, lastPosB4Work{p}(v,:)];
+        GASPos(end+1,1) = ey(1);
+        GASPos(end,2) = ey(2);
+        
+    end
+     
+ end
+ 
+ 
+ %% Calc GAS centroid
+ 
+     
+     [GASIDX, noise] = DBSCAN(GASPos,0.00015,3);
+        
+     clusterIDX = logical(GASIDX);
+     
+     GASCluster = GASPos(clusterIDX,:);
+     
+     
+     GASCentroid = calcCentroid(GASCluster);
+ 
+%% Add GAStech coordinates to locations table
+st = {'GAStech'};
+
+t2 = table(st, GASCentroid(1), GASCentroid(2),'VariableNames', {'location','lat','long'});
+
+locationsV3 = [centroidTable; t2];
+%%
+
+     
+writetable(locationsV3,'locations-v3.csv');
 
