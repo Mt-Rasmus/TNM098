@@ -33,50 +33,50 @@ tic
 %This loop picks all the transactions for each location and saves them in loc_trans
 for i = 1:l
 
-t = ismember(cc_data.location, locations{i});
-loc_trans{i} = cc_data(t,:);
+    t = ismember(cc_data.location, locations{i});
+    loc_trans{i} = cc_data(t,:);
 
-[r,~] = size(loc_trans{i});
-
-
-most_recent_pos = {};
-no_id_idx = [];
-
-%This loop goes through all the transaction for a location, matches the name of the person that made the purchase with a carID
-%and finds the position of that car at the time closest to the time of purchase
-for j = 1:r
+    [r,~] = size(loc_trans{i});
 
 
-person_idx = ismember(employee_data(:,1:2), loc_trans{i}(j,4:5)); % Finds the person in car-assignments.csv
-car_id = employee_data(person_idx,3); %Pics out the carId for that person
+    most_recent_pos = {};
+    no_id_idx = [];
+
+    %This loop goes through all the transaction for a location, matches the name of the person that made the purchase with a carID
+    %and finds the position of that car at the time closest to the time of purchase
+    for j = 1:r
 
 
-
- if ~isnan(car_id.CarID) %makes sure the person has an carID
+        person_idx = ismember(employee_data(:,1:2), loc_trans{i}(j,4:5)); % Finds the person in car-assignments.csv
+        car_id = employee_data(person_idx,3); %Picks out the carId for that person
 
 
 
-timeStamp = loc_trans{i}(j,1).timestamp; %the time of purchase
+        if ~isnan(car_id.CarID) %makes sure the person has an carID
 
-% Picks all the recorded positions of the car in question
-car_idx = ismember(M(:,2),car_id); %
-car_pos = M(car_idx,:);
 
-[rows,~] = size(car_pos);
 
-%Calculates the time difference between time of purchase and gps record timestamp
-timediff = abs(car_pos.timestamp - timeStamp);
+            timeStamp = loc_trans{i}(j,1).timestamp; %the time of purchase
 
-%Finds the gps record closest to the time of purchase
-[nearest, nIDX] = min(timediff);
-cell = {};
-cell{1} = car_pos(nIDX,:);
-%most_recent_pos{j} = car_pos(nIDX,:);
- most_recent_pos = [most_recent_pos, cell];
+            % Picks all the recorded positions of the car in question
+            car_idx = ismember(M(:,2),car_id); %
+            car_pos = M(car_idx,:);
 
- else
-     no_id_idx = [i,j];
-     %most_recent_pos{j} = {};
+            [rows,~] = size(car_pos);
+
+            %Calculates the time difference between time of purchase and gps record timestamp
+            timediff = abs(car_pos.timestamp - timeStamp);
+
+            %Finds the gps record closest to the time of purchase
+            [nearest, nIDX] = min(timediff);
+            cell = {};
+            cell{1} = car_pos(nIDX,:);
+            %most_recent_pos{j} = car_pos(nIDX,:);
+             most_recent_pos = [most_recent_pos, cell];
+
+        else
+             no_id_idx = [i,j];
+             %most_recent_pos{j} = {};
 
 
  end
@@ -147,12 +147,12 @@ for v = 1:c1
     [length, ~] = size(location_coord{v});
     if ~isempty(location_coord{v})
 
-    for o = 1:length
+        for o = 1:length
 
-        positions = [positions,location_coord{v}(o,2:3)];
+            positions = [positions,location_coord{v}(o,2:3)];
 
 
-    end
+        end
 
     end
 end
@@ -201,10 +201,10 @@ for v = 1:c1
 
         if ~isempty(pos)
 
-        %clusters = [clusters,pos];
-        clusters{locationIDX} = pos;
-        foundLocations{locationIDX} = locations{v};
-        locationIDX = locationIDX + 1;
+            %clusters = [clusters,pos];
+           clusters{locationIDX} = pos;
+           foundLocations{locationIDX} = locations{v};
+           locationIDX = locationIDX + 1;
 
         else
             noClustersIdx = [noClustersIdx, v];
@@ -289,7 +289,7 @@ hold on
 % legend(foundLocations, 'FontSize', 20, 'Location', 'northeast');
 hold on
 for k = 1:height(locationsV3)
-scatter(locationsV3(k,:).long, locationsV3(k,:).lat, 500, pntColor(k,:), 'filled', 'Marker','o');
+    scatter(locationsV3(k,:).long, locationsV3(k,:).lat, 500, pntColor(k,:), 'filled', 'Marker','o');
 end
 
 
@@ -375,11 +375,11 @@ clusterPoints = {};
 
 for c = 1:length(employeeHome)
 
-[clusterIndex, isNoise] = DBSCAN(employeeHome{c},0.00015, 3);
+    [clusterIndex, isNoise] = DBSCAN(employeeHome{c},0.00015, 3);
 
-clusterIndex = logical(clusterIndex);
+    clusterIndex = logical(clusterIndex);
 
-clusterPoints{c} = employeeHome{c}(clusterIndex,:);
+    clusterPoints{c} = employeeHome{c}(clusterIndex,:);
 
 
 end
@@ -417,34 +417,34 @@ for j = 1:L
 
     for z = 1:nrDays
 
-    carIDX = noonPositions{j}(:,:).timestamp.Day == uDays(z,:);
-    datePos = noonPositions{j}(carIDX,:);
+        carIDX = noonPositions{j}(:,:).timestamp.Day == uDays(z,:);
+        datePos = noonPositions{j}(carIDX,:);
 
-    [Size,~] = size(datePos);
+        [Size,~] = size(datePos);
 
-    max = duration(0,0,0);
+        max = duration(0,0,0);
 
-    if Size > 1
+        if Size > 1
 
-    for y = 1:Size-1
+            for y = 1:Size-1
 
-    diff = abs(datePos(y,:).timestamp - datePos(y+1,:).timestamp);
+                diff = abs(datePos(y,:).timestamp - datePos(y+1,:).timestamp);
 
 
-    if diff > max
-        max = diff;
-        index = y;
-    end
+                if diff > max
+                    max = diff;
+                    index = y;
+                end
 
-    end
+            end
 
-    endOfDayPos(z,1) = datePos(index,:).lat;
-    endOfDayPos(z,2) = datePos(index,:).long;
+            endOfDayPos(z,1) = datePos(index,:).lat;
+            endOfDayPos(z,2) = datePos(index,:).long;
 
-    else
-        endOfDayPos(z,1) = datePos(:,:).lat;
-        endOfDayPos(z,2) = datePos(:,:).long;
-    end
+        else
+            endOfDayPos(z,1) = datePos(:,:).lat;
+            endOfDayPos(z,2) = datePos(:,:).long;
+        end
 
     end
 
