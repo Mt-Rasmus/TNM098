@@ -14,6 +14,7 @@ employee_data = readtable('car-assignments-v2.csv');
 
 %% Finding the coordinates for the diffeent locations in cc_data
 
+%Pick the different locations in the transaction history
 locations = unique(cc_data.location);
 
 l = size(locations);
@@ -29,6 +30,7 @@ closest_positions = {};
 
 tic
 
+%This loop picks all the transactions for each location and saves them in loc_trans
 for i = 1:l
 
 t = ismember(cc_data.location, locations{i});
@@ -40,30 +42,32 @@ loc_trans{i} = cc_data(t,:);
 most_recent_pos = {};
 no_id_idx = [];
 
+%This loop goes through all the transaction for a location, matches the name of the person that made the purchase with a carID
+%and finds the position of that car at the time closest to the time of purchase
 for j = 1:r
-    
-
-person_idx = ismember(employee_data(:,1:2), loc_trans{i}(j,4:5));
-car_id = employee_data(person_idx,3);
 
 
-
- if ~isnan(car_id.CarID)
-     
-
-
-timeStamp = loc_trans{i}(j,1).timestamp;
+person_idx = ismember(employee_data(:,1:2), loc_trans{i}(j,4:5)); % Finds the person in car-assignments.csv
+car_id = employee_data(person_idx,3); %Pics out the carId for that person
 
 
-car_idx = ismember(M(:,2),car_id);
 
+ if ~isnan(car_id.CarID) %makes sure the person has an carID
+
+
+
+timeStamp = loc_trans{i}(j,1).timestamp; %the time of purchase
+
+% Picks all the recorded positions of the car in question
+car_idx = ismember(M(:,2),car_id); %
 car_pos = M(car_idx,:);
 
 [rows,~] = size(car_pos);
 
-   
+%Calculates the time difference between time of purchase and gps record timestamp
 timediff = abs(car_pos.timestamp - timeStamp);
-    
+
+%Finds the gps record closest to the time of purchase
 [nearest, nIDX] = min(timediff);
 cell = {};
 cell{1} = car_pos(nIDX,:);
@@ -73,7 +77,7 @@ cell{1} = car_pos(nIDX,:);
  else
      no_id_idx = [i,j];
      %most_recent_pos{j} = {};
-     
+
 
  end
 
@@ -92,45 +96,45 @@ toc
 [~,c1] = size(closest_positions);
 location_coord = {};
 
-
+%Some formatting
 for m = 1:c1
-   
+
     [~,c2] = size(closest_positions{m});
     coord = [];
-    
-    
+
+
     for n = 1:c2
-       
+
         p = closest_positions{m}(:,n);
-        
+
         coord(n,:) = table2array(p{1}(:,2:4));
 %         if ~isempty(p{1})
-%             
+%
 %             coord = [coord,p];
-%  
+%
 %         end
-%             
+%
 
     end
-    
+
     location_coord{m} = coord;
-    
-    
-    
+
+
+
 end
 
 %%
 
 % [~,col] = size(coord);
-% 
+%
 % longitude = [];
 % latitude = [];
-% 
+%
 % for s = 1:col
-%     
+%
 %     longitude(s,:) = coord{s}.long;
 %     latitude(s,:) = coord{s}.lat;
-%     
+%
 % end
 
 %% Find the optimal eps for DBSCAN
@@ -139,17 +143,17 @@ end
 positions = {};
 %%http://iopscience.iop.org/article/10.1088/1755-1315/31/1/012012/pdf
 for v = 1:c1
-    
+
     [length, ~] = size(location_coord{v});
     if ~isempty(location_coord{v})
-    
+
     for o = 1:length
-        
+
         positions = [positions,location_coord{v}(o,2:3)];
-        
-        
+
+
     end
-    
+
     end
 end
 
@@ -170,7 +174,7 @@ x = 1:nr_points;
 figure
 
 scatter(x,nearestNeighborDist);
-%[X,Y] = getpts; %To zoom: comment this line and run it in command window after zooming 
+%[X,Y] = getpts; %To zoom: comment this line and run it in command window after zooming
 
 
 
@@ -181,43 +185,45 @@ noClustersIdx = [];
 foundLocations = [];
 locationIDX = 1;
 
+% This loop goes through the postitions closest in time of each purchase for each loaction
+% and uses DBScan to define a cluster for each location
 for v = 1:c1
-    
+
    if ~isempty(location_coord{v})
-       
+
        pos = location_coord{v}(:,2:3);
-        
+
         [clusterIDX, isnoise] = DBSCAN(pos, 0.00015, 3);
-        
+
         clusterIDX = logical(clusterIDX);
-        
+
         pos = pos(clusterIDX,:);
-        
+
         if ~isempty(pos)
-        
+
         %clusters = [clusters,pos];
         clusters{locationIDX} = pos;
         foundLocations{locationIDX} = locations{v};
         locationIDX = locationIDX + 1;
-        
+
         else
             noClustersIdx = [noClustersIdx, v];
-        
+
         end
-        
+
     end
-    
-    
+
+
 end
 
-%% Determine coordinates for each location 
+%% Determine coordinates for each location
 %  by calculaing the centriod for each cluster
 
 [~,clustersize] = size(clusters);
 centroids = [clustersize,2];
 
 for c = 1:clustersize
-    
+
 
     centroids(c,:) = calcCentroid(clusters{c});
 
@@ -255,7 +261,7 @@ figure
 
 mapshow(S);
 
-%lon=[samples(:,2)]; % X=long 
+%lon=[samples(:,2)]; % X=long
 %lat=[samples(:,3)]; % Y=lat
 
 %col = lon;
@@ -273,13 +279,13 @@ hold on
 % pntColor = distinguishable_colors(nrCentroids);
 % hold on
 % for C = 1:nrCentroids
-%     
+%
 %     scatter(centroids(C,2),centroids(C,1), 500, pntColor(C,:),'filled', 'Marker','o');
-%     
+%
 % end
-% 
+%
 % foundLocations = reshape(foundLocations, [28,1]);
-% 
+%
 % legend(foundLocations, 'FontSize', 20, 'Location', 'northeast');
 hold on
 for k = 1:height(locationsV3)
@@ -293,37 +299,40 @@ legend(locationsV3(:,:).location, 'FontSize', 20, 'Location', 'northeast');
 
 
 % for k = 1:length(employeeHome)
-%    
+%
 %     scatter(homecentroids(k,2), homecentroids(k,1), 2000, Color(k,:));
-%     
+%
 % end
- 
+
   %  scatter(GASCentroid(2), GASCentroid(1), 500,'filled','Marker','o');
-   
+
 
 %% Finding coordinates for each employees home
 
 [nrEmployees,~] = size(employee_data);
 
 % nighthours = hours(1:5);
-% 
+%
 % night = M(:,:).timestamp.Hour >= 1 & M(:,:).timestamp.Hour <= 5;
-% 
+%
 % nightpos = M(night,:);
 employeeHome = {nrEmployees};
 empIDs = zeros(nrEmployees-9,1);
 noonPositions = {35};
 
+% This loop goes through each employee that can be assigned to a car and checks the last position for
+% their car each day
 for q = 1:nrEmployees - 9
-    
+
     % Start and end time
     h1 = 7;
     h2 = 12;
-    
-    
+
+    % Picks out the employee id
     empID = employee_data(q,:).CarID;
     empIDs(q) = empID;
-    
+
+    % Finds all the positions for the current employee
     cIDX = M(:,:).CarID == empID;
     carPos = M(cIDX, :);
     
@@ -335,29 +344,29 @@ for q = 1:nrEmployees - 9
     noonPos(:,1) = POS.lat;
     noonPos(:,2) = POS.long;
     noonPositions{q} = POS; % <---------
-    
+
     days = unique(carPos(:,:).timestamp.Day);
     [nrdays, ~] = size(days);
     endOfDayPos = zeros(nrdays,2);
-     
-    
+
+
     for d = 1:nrdays
-        
-        
+
+
         carPosIDX = carPos(:,:).timestamp.Day == days(d,:);
         CP = carPos(carPosIDX,:);
         [n,~] = size(CP);
         carPosDate = zeros(n,2);
-        
-        carPosDate(:,1) = CP.lat; 
+
+        carPosDate(:,1) = CP.lat;
         carPosDate(:,2) = CP.long;
         endOfDayPos(d,:) = carPosDate(end,:);
-        
-    
+
+
     end
-    
+
     employeeHome{q} = endOfDayPos;
-    
+
 end
 
 %% Use DBSCAN in order to find centroids
@@ -380,7 +389,7 @@ end
 homecentroids = [NrClusters,2];
 
 for p = 1:NrClusters
-    
+
     homecentroids(p,:) = calcCentroid(clusterPoints{p});
 
 end
@@ -398,37 +407,37 @@ lastPosB4Work = {L};
 tic
 
 for j = 1:L
-    
-    
+
+
     uDays = unique(noonPositions{j}(:,:).timestamp.Day);
     [nrDays, ~] = size(uDays);
     endOfDayPos = zeros(nrDays,2);
-    
+
     %for z = 1:zSize-1
-    
+
     for z = 1:nrDays
-        
+
     carIDX = noonPositions{j}(:,:).timestamp.Day == uDays(z,:);
     datePos = noonPositions{j}(carIDX,:);
-    
+
     [Size,~] = size(datePos);
-    
+
     max = duration(0,0,0);
-    
+
     if Size > 1
-    
+
     for y = 1:Size-1
-    
+
     diff = abs(datePos(y,:).timestamp - datePos(y+1,:).timestamp);
-    
-    
+
+
     if diff > max
         max = diff;
         index = y;
     end
-   
+
     end
-       
+
     endOfDayPos(z,1) = datePos(index,:).lat;
     endOfDayPos(z,2) = datePos(index,:).long;
 
@@ -436,30 +445,30 @@ for j = 1:L
         endOfDayPos(z,1) = datePos(:,:).lat;
         endOfDayPos(z,2) = datePos(:,:).long;
     end
-    
+
     end
-    
+
    lastPosB4Work{j} = endOfDayPos;
-       
-    
+
+
 end
 
 toc
 
 
-%% 
+%%
 GASPos = [];
 
  for p = 1:length(lastPosB4Work)
-     
+
     [S, ~] = size(lastPosB4Work{p});
-    
+
     for v = 1:S
-       
+
         GASPos = [GASPos, lastPosB4Work{p}(v,:)];
-        
+
     end
-     
+
  end
 
 %%
@@ -467,33 +476,33 @@ GASPos = [];
 GASPos = [];
 
  for p = 1:length(lastPosB4Work)
-     
+
     [S, ~] = size(lastPosB4Work{p});
-    
+
     for v = 1:S
-       
+
         ey = lastPosB4Work{p}(v,:);
      %   GASPos = [GASPos, lastPosB4Work{p}(v,:)];
         GASPos(end+1,1) = ey(1);
         GASPos(end,2) = ey(2);
-        
+
     end
-     
+
  end
- 
- 
+
+
  %% Calc GAS centroid
- 
-     
+
+
      [GASIDX, noise] = DBSCAN(GASPos,0.00015,3);
-        
+
      clusterIDX = logical(GASIDX);
-     
+
      GASCluster = GASPos(clusterIDX,:);
-     
-     
+
+
      GASCentroid = calcCentroid(GASCluster);
- 
+
 %% Add GAStech coordinates to locations table
 st = {'GAStech'};
 
@@ -502,6 +511,5 @@ t2 = table(st, GASCentroid(1), GASCentroid(2),'VariableNames', {'location','lat'
 locationsV3 = [centroidTable; t2];
 %%
 
-     
-writetable(locationsV3,'locations-v3.csv');
 
+writetable(locationsV3,'locations-v3.csv');
