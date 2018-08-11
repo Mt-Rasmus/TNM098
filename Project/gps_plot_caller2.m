@@ -19,7 +19,7 @@ CC = readtable('cc_data.csv');
 
 %%
 
-ID = 22; % Picking out a car ID.
+ID = 18; % Picking out a car ID.
 
 name = CA(ID,:);
 

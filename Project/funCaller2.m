@@ -74,6 +74,7 @@ commonPlaces = {};
 commonTimes(25) = datetime;
 lengths = 1:length(matchIdx);
 % matchIdx = find(matchCount);
+hej = 0;
 
 for k = 1:length(matchIdx) % runs as many times as there are matching people
     
@@ -94,6 +95,9 @@ for k = 1:length(matchIdx) % runs as many times as there are matching people
               if(currPrice == currPriceCell(m) && ...
                      strcmp(compPlace(priceMatchIdx(l)),currPlaceCell(m)) && ...
                      day(compDate(priceMatchIdx(l))) == day(currDateCell(m)))
+                 if k==4
+                     hej = hej + 1;
+                 end
                 if (k==2) 
                      tm = tm + 1;
                      matchesWithPeople(k) = matchesWithPeople(k) + 1;
